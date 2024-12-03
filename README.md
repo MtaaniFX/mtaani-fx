@@ -1,1 +1,6 @@
-# mtaani-fx
+# MtaaniFX
+
+
+# PROJECT STRUCTURE
+
+
