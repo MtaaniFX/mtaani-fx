@@ -1,4 +1,5 @@
 import { Checkbox } from "../ui/checkbox";
+import React from "react";
 
 export function TutorialStep({
   title,
