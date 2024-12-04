@@ -2,7 +2,7 @@ import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
-import pluginNext from "@next/eslint-plugin-next";
+// import pluginNext from "@next/eslint-plugin-next";
 
 
 export default [
@@ -16,5 +16,5 @@ export default [
     pluginReact.configs.flat["jsx-runtime"],
     // This ESLint: Config (unnamed): Key "plugins": still uses the deprecated eslintrc format (array of strings)
     // rather than flat config format (object), needs update when the upstream `Next.js` update their configuration
-    pluginNext.configs.recommended,
+    // pluginNext.configs.recommended,
 ];
