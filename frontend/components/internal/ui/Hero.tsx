@@ -10,6 +10,7 @@ import {Teknaf} from "@/app/fonts/Teknaf";
 import {PoppinsFont} from "@/app/fonts/Poppins";
 import {FaviconRow} from "@/components/internal/icons/Favicon";
 import {cn} from "@/lib/utils";
+import TrustedPartners from "@/components/internal/landing-page/TrustedPartners";
 
 type HeroTextGradientProps = {
     // Dark theme gradient
@@ -22,7 +23,7 @@ type HeroTextGradientProps = {
 function HeroTextGradient(props: HeroTextGradientProps) {
     let theme = useTheme()
 
-    function simpleGradient(startColor, endColor) {
+    function simpleGradient(startColor: string, endColor: string) {
         const direction = "left"
         return `linear-gradient( to ${direction}, ${startColor}, ${endColor})`
     }
@@ -125,6 +126,7 @@ function Hero() {
             </Stack>
 
             <div className={cn("mt-5")}></div>
+            <TrustedPartners/>
             <FaviconRow/>
         </div>
         <Spotlight

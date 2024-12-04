@@ -7,6 +7,7 @@ import AppTheme from "@/components/internal/shared-theme/AppTheme";
 import CssBaseline from "@mui/material/CssBaseline";
 import AppAppBar from "@/components/internal/mui-template/components/AppAppBar";
 import Hero from "@/components/internal/ui/Hero";
+import ServiceFeatures from "@/components/internal/landing-page/ServiceFeatures";
 
 function LandingPage(props) {
     return (
@@ -14,6 +15,7 @@ function LandingPage(props) {
             <CssBaseline enableColorScheme />
             <AppAppBar />
             <Hero/>
+            <ServiceFeatures/>
             <div className={"w-full h-[2000px] bg-amber-600"}></div>
         </AppTheme>
     );
