@@ -90,8 +90,14 @@ function Hero() {
                     It’s time for your investment strategy to just work.
                 </Typography>
                 <Stack direction="row" spacing={2}>
-                    <Button variant="contained">Get Started</Button>
-                    <Button variant="outlined">Our Story</Button>
+                    <Button href={"/#go-pricing"}
+                            variant="contained">
+                        Get Started
+                    </Button>
+                    <Button href={"/#go-testimonials"}
+                            variant="outlined">
+                        Our Story
+                    </Button>
                 </Stack>
             </Stack>
 

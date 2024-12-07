@@ -20,14 +20,27 @@ function LandingPage(props:any) {
         <AppTheme {...props}>
             <CssBaseline enableColorScheme />
             <LandingPageBackground>
-                <AppAppBar />
+                <AppAppBar/>
                 <Hero/>
-                <Features/>
-                {/*<ServiceFeatures/>*/}
-                <Testimonials/>
-                <Pricing/>
-                <FAQ/>
-                <Footer/>
+                <div id={"go-features"}>
+                    <Features/>
+                </div>
+
+                <div id={"go-testimonials"}>
+                    <Testimonials/>
+                </div>
+
+                <div id={"go-pricing"}>
+                    <Pricing/>
+                </div>
+
+                <div id={"go-faq"}>
+                    <FAQ/>
+                </div>
+
+                <div id={"go-footer"}>
+                    <Footer/>
+                </div>
             </LandingPageBackground>
         </AppTheme>
     );
