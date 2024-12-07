@@ -70,7 +70,7 @@ function Hero() {
                 <NotificationButton sx={{
                     fontFamily: `${PoppinsFont.style.fontFamily}, sans-serif`,
                 }}
-                >💼 | Investment that just works!</NotificationButton>
+                >💼 &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; Investment that just works!</NotificationButton>
                 <HeroTextGradient>Building the future of investment with MtaaniFX</HeroTextGradient>
                 <Typography
                     align={"center"}

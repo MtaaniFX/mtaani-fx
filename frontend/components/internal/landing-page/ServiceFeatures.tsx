@@ -204,7 +204,7 @@ export default function ServiceFeatures() {
                     variant="body1"
                     sx={{color: 'text.secondary', mb: {xs: 2, sm: 4}}}
                 >
-                    Here's a tip of why you should choose us as your investment partner.
+                    Here's a tip of the leaf, why you should choose us as your investment partner.
                 </Typography>
             </Box>
             <Box

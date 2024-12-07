@@ -30,7 +30,7 @@ const mockFaqs: FAQInfo[] = [
         answer: "The minimum investment is $100",
     },{
         question: "What's the maximum investment?",
-        answer: "You can invest however much you can. However, for investments more than $1000, you have to contact us first.",
+        answer: "You can invest however much you can. However, for investments more than $50,000, you have to contact us first.",
     },
 ]
 
