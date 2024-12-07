@@ -60,3 +60,34 @@ export function FaviconRow() {
         </Stack>
     )
 }
+
+export function FaviconCol() {
+    let theme = useTheme()
+    return (
+        <Stack spacing={0.08}
+               sx={{
+                   justifyContent: "center",
+                   alignItems: "left",
+               }}>
+            <FaviconBase fill={theme.palette.primary.main}/>
+            {/*<Typography*/}
+            {/*    sx={{*/}
+            {/*        fontFamily: Melete.style.fontFamily,*/}
+            {/*        fontSize: '21px',*/}
+            {/*        color: theme.palette.primary.main,*/}
+            {/*        letterSpacing: "0",*/}
+            {/*        mr: 3,*/}
+            {/*    }}*/}
+            {/*>MTAANI</Typography>*/}
+            <Typography
+                sx={{
+                    fontFamily: Melete.style.fontFamily,
+                    fontSize: '21px',
+                    color: theme.palette.primary.main,
+                    letterSpacing: "0",
+                    mr: 3,
+                }}
+            >FX</Typography>
+        </Stack>
+    )
+}
