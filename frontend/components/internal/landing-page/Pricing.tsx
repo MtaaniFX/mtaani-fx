@@ -163,7 +163,7 @@ export default function Pricing() {
                                         ${tier.price}
                                     </Typography>
                                     <Typography component="h3" variant="h6">
-                                        &nbsp; per month
+                                        &nbsp;
                                     </Typography>
                                 </Box>
                                 <Divider sx={{ my: 2, opacity: 0.8, borderColor: 'divider' }} />
