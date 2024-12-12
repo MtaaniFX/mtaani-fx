@@ -14,14 +14,22 @@ import {FaviconRow} from '@/components/internal/icons/Favicon';
 import PageBackground from "@/components/internal/ui/PageBackground";
 import {createClient} from "@/utils/supabase/client";
 import {MtCard} from "@/components/internal/styled/MtCard";
-import {Alert, AlertTitle} from "@mui/material";
+import {Alert, AlertTitle, Collapse, Snackbar} from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import {CloseIcon} from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
+import {useRouter} from "next/navigation";
+
 
 const supabase = createClient();
 
-export default function (props: { disableCustomTheme?: boolean }) {
+export default function UpdatePassword(props: { disableCustomTheme?: boolean }) {
     const [passwordError, setPasswordError] = React.useState(false);
-    const [showAlert, setShowAlert] = React.useState('hidden');
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+    const [alertOpen, setAlertOpen] = React.useState(false);
+    const [redirectAlertOpen, setRedirectAlertOpen] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState("");
+
+    const router = useRouter();
 
     const validateInputs = () => {
         const password = document.getElementById('password') as HTMLInputElement;
@@ -39,6 +47,7 @@ export default function (props: { disableCustomTheme?: boolean }) {
             Error('Password must be at least 6 characters long.')
         } else if (password.value !== passwordConfirm.value) {
             Error('Passwords must match, re-enter passwords correctly');
+            console.log("pass: ", password.value, "confirm:", passwordConfirm.value)
         } else {
             setPasswordError(false);
             setPasswordErrorMessage('');
@@ -56,33 +65,50 @@ export default function (props: { disableCustomTheme?: boolean }) {
         const formData = new FormData(event.currentTarget);
         const password = formData.get('password') as string;
 
-        setShowAlert("visible")
+        const {error} = await supabase.auth.updateUser({
+            password: password,
+        })
 
-        // const { data, error } = await supabase.auth.updateUser({
-        //     password: password,
-        // })
+        if (error) {
+            setAlertMessage(error.message)
+            setAlertOpen(true);
+            return
+        } else {
+            setAlertOpen(false);
+            setRedirectAlertOpen(true)
+        }
 
-        // console.log("returned: data: ", data, " error:", error);
+        setTimeout(()=>{
+            const url = new URL(window.location.href);
+            const redirectTo = url.searchParams.get("redirect_to");
+
+            if (redirectTo) {
+                router.replace(redirectTo);
+            } else {
+                router.replace("/dashboard");
+            }
+        }, 2000)
     };
 
     return (
         <AppTheme {...props}>
             <CssBaseline enableColorScheme/>
             <ColorModeSelect sx={{position: 'fixed', top: '1rem', right: '1rem'}}/>
-            <PageBackground>
+            <Snackbar
+                open={redirectAlertOpen}
+                autoHideDuration={6000}
+                onClose={()=>{}}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
                 <Alert
-                    className={"animate-bounce z-10 transition-all"}
+                    onClose={()=>{}}
                     severity="success"
-                    sx={{
-                    position: 'fixed',
-                    bottom: '20px',
-                    right: '20px',
-                    zIndex: 1000,
-                    visibility: showAlert,
-                }}>
-                    <AlertTitle>Success</AlertTitle>
-                    This is a success Alert with an encouraging title.
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    Password updated successfully!
                 </Alert>
+            </Snackbar>
+            <PageBackground>
                 <Box sx={{
                     display: "flex",
                     alignItems: "center",
@@ -141,6 +167,27 @@ export default function (props: { disableCustomTheme?: boolean }) {
                                     color={passwordError ? 'error' : 'primary'}
                                 />
                             </FormControl>
+                            <Collapse in={alertOpen}>
+                                <Alert
+                                    severity="error"
+                                    action={
+                                        <IconButton
+                                            aria-label="close"
+                                            color="inherit"
+                                            size="small"
+                                            onClick={() => {
+                                                setAlertOpen(false);
+                                            }}
+                                        >
+                                            <CloseIcon  />
+                                        </IconButton>
+                                    }
+                                    sx={{ mb: 2 }}
+                                >
+                                    <AlertTitle>Error</AlertTitle>
+                                    {alertMessage}
+                                </Alert>
+                            </Collapse>
                             <Button
                                 type="submit"
                                 fullWidth

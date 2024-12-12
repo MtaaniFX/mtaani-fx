@@ -8,38 +8,24 @@ import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import MuiCard from '@mui/material/Card';
-import {styled} from '@mui/material/styles';
 import AppTheme from '@/components/internal/shared-theme/AppTheme';
 import ColorModeSelect from '@/components/internal/shared-theme/ColorModeSelect';
 import {FaviconRow} from '@/components/internal/icons/Favicon';
 import PageBackground from "@/components/internal/ui/PageBackground";
 import {createClient} from "@/utils/supabase/client";
+import {MtCard} from "@/components/internal/styled/MtCard";
+import {Alert, AlertTitle, Collapse} from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import {CloseIcon} from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
 
 const supabase = createClient();
-
-const Card = styled(MuiCard)(({theme}) => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignSelf: 'center',
-    width: '100%',
-    padding: theme.spacing(4),
-    gap: theme.spacing(2),
-    margin: 'auto',
-    boxShadow:
-        'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-    [theme.breakpoints.up('sm')]: {
-        width: '450px',
-    },
-    ...theme.applyStyles('dark', {
-        boxShadow:
-            'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
-    }),
-}));
 
 export default function (props: { disableCustomTheme?: boolean }) {
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+    const [alertOpen, setAlertOpen] = React.useState(false);
+    const [done, setDone] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState("Hi");
 
     const validateInputs = () => {
         const email = document.getElementById('email') as HTMLInputElement;
@@ -67,11 +53,20 @@ export default function (props: { disableCustomTheme?: boolean }) {
         const formData = new FormData(event.currentTarget);
         const email = formData.get('email');
 
-        const { data, error } = await supabase.auth.resetPasswordForEmail(email as string, {
+        const {error} = await supabase.auth.resetPasswordForEmail(email as string, {
             // TODO replace localhost
             redirectTo: `http://localhost:3000/auth/callback?redirect_to=/u/0/update-password`,
         })
-        console.log("returned: data: ", data, " error:", error);
+
+        if (error) {
+            setAlertMessage(error.message);
+            setAlertOpen(true);
+            return
+        } else {
+            setAlertMessage('If you provided the right email address, check the email for the next steps.');
+            setAlertOpen(true);
+            setDone(true)
+        }
     };
 
     return (
@@ -86,7 +81,7 @@ export default function (props: { disableCustomTheme?: boolean }) {
                     padding: "2em",
                     minHeight: "100vh"
                 }}>
-                    <Card variant="outlined">
+                    <MtCard variant="outlined">
                         <FaviconRow/>
                         <Typography
                             component="h1"
@@ -118,16 +113,38 @@ export default function (props: { disableCustomTheme?: boolean }) {
                                     helperText={emailErrorMessage}
                                 />
                             </FormControl>
+                            <Collapse in={alertOpen}>
+                                <Alert
+                                    severity="error"
+                                    action={
+                                        <IconButton
+                                            aria-label="close"
+                                            color="inherit"
+                                            size="small"
+                                            onClick={() => {
+                                                setAlertOpen(false);
+                                            }}
+                                        >
+                                            <CloseIcon  />
+                                        </IconButton>
+                                    }
+                                    sx={{ mb: 2 }}
+                                >
+                                    <AlertTitle>Error</AlertTitle>
+                                    {alertMessage}
+                                </Alert>
+                            </Collapse>
                             <Button
                                 type="submit"
                                 fullWidth
                                 variant="contained"
                                 onClick={validateInputs}
+                                disabled={done}
                             >
                                 Reset Password
                             </Button>
                         </Box>
-                    </Card>
+                    </MtCard>
                 </Box>
             </PageBackground>
         </AppTheme>
