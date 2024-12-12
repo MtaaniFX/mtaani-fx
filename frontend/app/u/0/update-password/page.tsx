@@ -18,7 +18,7 @@ import {Alert, AlertTitle, Collapse, Snackbar} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import {CloseIcon} from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
 import {useRouter} from "next/navigation";
-
+import {paths} from "@/lib/paths";
 
 const supabase = createClient();
 
@@ -85,7 +85,7 @@ export default function UpdatePassword(props: { disableCustomTheme?: boolean }) 
             if (redirectTo) {
                 router.replace(redirectTo);
             } else {
-                router.replace("/dashboard");
+                router.replace(paths.dashboard.overview);
             }
         }, 2000)
     };

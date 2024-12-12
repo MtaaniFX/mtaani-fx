@@ -17,6 +17,9 @@ import {MtCard} from "@/components/internal/styled/MtCard";
 import {Alert, AlertTitle, Collapse} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import {CloseIcon} from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
+import ResetSuccessDialogue from "@/app/(auth)/reset-password/ResetSuccessDialogue";
+import {siteURL} from "@/lib/constants";
+import {paths} from "@/lib/paths";
 
 const supabase = createClient();
 
@@ -24,8 +27,8 @@ export default function (props: { disableCustomTheme?: boolean }) {
     const [emailError, setEmailError] = React.useState(false);
     const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
     const [alertOpen, setAlertOpen] = React.useState(false);
-    const [done, setDone] = React.useState(false);
-    const [alertMessage, setAlertMessage] = React.useState("Hi");
+    const [openSuccessDialogue, setOpenSuccessDialogue] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
 
     const validateInputs = () => {
         const email = document.getElementById('email') as HTMLInputElement;
@@ -54,18 +57,17 @@ export default function (props: { disableCustomTheme?: boolean }) {
         const email = formData.get('email');
 
         const {error} = await supabase.auth.resetPasswordForEmail(email as string, {
-            // TODO replace localhost
-            redirectTo: `http://localhost:3000/auth/callback?redirect_to=/u/0/update-password`,
+            redirectTo: `${siteURL}/auth/callback?redirect_to=${paths.auth.updatePassword}`,
         })
 
         if (error) {
             setAlertMessage(error.message);
             setAlertOpen(true);
+            setOpenSuccessDialogue(false);
             return
         } else {
-            setAlertMessage('If you provided the right email address, check the email for the next steps.');
-            setAlertOpen(true);
-            setDone(true)
+            setOpenSuccessDialogue(true);
+            setAlertOpen(false);
         }
     };
 
@@ -73,6 +75,9 @@ export default function (props: { disableCustomTheme?: boolean }) {
         <AppTheme {...props}>
             <CssBaseline enableColorScheme/>
             <ColorModeSelect sx={{position: 'fixed', top: '1rem', right: '1rem'}}/>
+            <ResetSuccessDialogue
+                open={openSuccessDialogue}
+                setOpen={setOpenSuccessDialogue}/>
             <PageBackground>
                 <Box sx={{
                     display: "flex",
@@ -139,7 +144,6 @@ export default function (props: { disableCustomTheme?: boolean }) {
                                 fullWidth
                                 variant="contained"
                                 onClick={validateInputs}
-                                disabled={done}
                             >
                                 Reset Password
                             </Button>
