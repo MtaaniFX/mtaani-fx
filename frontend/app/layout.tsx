@@ -20,10 +20,7 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
     return (
         <html lang="en">
         <body>
-        <main  className={cn(
-            "min-h-screen font-sans antialiased",
-            fontSans.variable
-        )}>
+        <main className={cn("app-layout min-h-screen font-sans antialiased", fontSans.variable)}>
             {children}
         </main>
         </body>
