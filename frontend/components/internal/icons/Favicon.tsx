@@ -1,4 +1,3 @@
-import * as React from 'react';
 import SvgIcon from '@mui/material/SvgIcon';
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -34,12 +33,12 @@ function FaviconBase({fill}: {fill?: string}) {
 }
 
 export default function Favicon() {
-    let theme = useTheme()
+    const theme = useTheme();
     return <FaviconBase fill={theme.palette.primary.main}/>
 }
 
 export function FaviconRow() {
-    let theme = useTheme()
+    const theme = useTheme();
     return (
         <Stack direction="row"
                spacing={0.08}
@@ -61,8 +60,31 @@ export function FaviconRow() {
     )
 }
 
+export function FaviconRowTextColor() {
+    // const theme = useTheme();
+    return (
+        <Stack direction="row"
+               spacing={0.08}
+               sx={{
+                   justifyContent: "center",
+                   alignItems: "center",
+               }}>
+            <FaviconBase fill='white'/>
+            <Typography
+                sx={{
+                    fontFamily: Melete.style.fontFamily,
+                    fontSize: '21px',
+                    color: "white",
+                    letterSpacing: "0",
+                    mr: 3,
+                }}
+            >MTAANI</Typography>
+        </Stack>
+    )
+}
+
 export function FaviconCol() {
-    let theme = useTheme()
+    const theme = useTheme();
     return (
         <Stack spacing={0.08}
                sx={{

@@ -26,6 +26,10 @@ import {linkIdMap, pages} from "@/app/(dashboard-pages)/dashboard.settings";
 import { LinearProgress } from '@mui/material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {FaviconRowTextColor} from "@/components/internal/icons/Favicon";
+import Footer from "@/components/internal/landing-page/Footer";
+import {stringOrEmpty} from "@/common/utils";
+
 
 const drawerWidth = 240;
 
@@ -64,10 +68,11 @@ const getStoredTheme = (): 'light' | 'dark' => {
 };
 
 export default function RootLayout({ children }: Props) {
-    const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<'light' | 'dark'>(getStoredTheme());
     const theme = useTheme();
     const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+    const [open, setOpen] = useState(true);
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const pathname = usePathname();
     const [loading, setLoading] = useState(false);
 
@@ -76,15 +81,20 @@ export default function RootLayout({ children }: Props) {
     }, [mode]);
 
     const toggleDrawer = () => {
-        setOpen(!open);
+        if(isMdUp) {
+            setOpen(!open);
+        } else {
+            setMobileDrawerOpen(!mobileDrawerOpen);
+        }
     };
 
     const handleThemeChange = () => {
         setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
     };
 
-    const selectedItem = linkIdMap.get(pathname);
-    const [selectedPage, setSelectedPage] = useState(selectedItem === undefined ? "" : selectedItem);
+    const [selectedPage, setSelectedPage] = useState(
+        stringOrEmpty(linkIdMap.get(pathname))
+    );
 
     const colorMode = {
         toggleColorMode: handleThemeChange,
@@ -102,8 +112,6 @@ export default function RootLayout({ children }: Props) {
     };
 
     useEffect(() => {
-        // window.addEventListener('load', ()=>{setLoading(false)});
-        // document.addEventListener('load', ()=>{setLoading(false)});
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, [prevScrollPos, hideAppBar]);
@@ -114,18 +122,23 @@ export default function RootLayout({ children }: Props) {
             <Divider />
             <List>
                 {pages.map((item) => (
-                    <Link href={item.link} key={item.text} passHref legacyBehavior>
+                    <Link href={item.link} key={item.text} passHref>
                         <ListItem disablePadding>
                             <ListItemButton
                                 onClick={() => {
                                     setSelectedPage(item.id);
                                     setLoading(true);
+                                    // In mobile screens, close the drawer, if a menu-item is selected
+                                    if(!isMdUp) {
+                                        setMobileDrawerOpen(false);
+                                    }
                                 }}
                                 selected={selectedPage === item.id}>
                                 <ListItemIcon>
                                     {item.icon}
                                 </ListItemIcon>
-                                {isMdUp && open && <ListItemText primary={item.text} />}
+                                <ListItemText primary={item.text} />
+                                {/*{isMdUp && open && }*/}
                             </ListItemButton>
                         </ListItem>
                     </Link>
@@ -134,20 +147,42 @@ export default function RootLayout({ children }: Props) {
         </div>
     );
 
+    // Container component to hold the dashboard content; this uses `useEffect()` to helps us
+    // detect when the component has been rendered on the page, so that we can stop our page
+    // loading Linear Progress animation
+    function Content({children}: {children: ReactNode}) {
+        useEffect(() => {
+           setLoading(false);
+           return () => setLoading(false);
+        }, [loading]);
+
+        return (
+            <>
+                {children}
+            </>
+        )
+    }
+
     return (
         <ThemeProvider theme={themeInstance}>
             <CssBaseline />
+            {loading && <LinearProgress
+                sx={{
+                    zIndex: (theme) => theme.zIndex.drawer + 2,
+                    width: "100%",
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                }} />
+            }
             <Box sx={{ display: 'flex' }}>
-                {/*{loading && <LinearProgress color="success" />}*/}
                 <AppBar
                     position="fixed"
                     sx={{
                         zIndex: (theme) => theme.zIndex.drawer + 1,
-                        top: hideAppBar ? '-64px' : (loading ? '4px' : '0px'),
-                        transition: 'top 0.3s'
-                }}
-                    // sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, top: hideAppBar ? '-64px' : '0px', transition: 'top 0.3s' }}
-                >
+                        top: hideAppBar ? '-64px' : '0px',
+                        transition: 'top 0.3s',
+                    }}>
                     <Toolbar>
                         <IconButton
                             color="inherit"
@@ -158,14 +193,11 @@ export default function RootLayout({ children }: Props) {
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                            <Avatar
-                                alt="App Logo"
-                                src="/app-logo.svg"
-                                sx={{ width: 24, height: 24, mr: 1 }}
-                            />
-                            Investify
+                        <Typography variant="h6" noWrap component="div" >
+                            <FaviconRowTextColor />
                         </Typography>
+                        {/* More Toolbar components can be added in or before the Box below */}
+                        <Box component="span" sx={{ flexGrow: 1 }}></Box>
                         <IconButton onClick={colorMode.toggleColorMode} color="inherit">
                             {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
                         </IconButton>
@@ -175,7 +207,7 @@ export default function RootLayout({ children }: Props) {
                 <Box component="nav" sx={{ width: { md: open ? drawerWidth : 'auto' }, flexShrink: { md: 0 } }}>
                     <Drawer
                         variant={isMdUp ? 'persistent' : 'temporary'}
-                        open={open}
+                        open={isMdUp? open: mobileDrawerOpen}
                         onClose={toggleDrawer}
                         ModalProps={{
                             keepMounted: true, // Better open performance on mobile.
@@ -190,15 +222,17 @@ export default function RootLayout({ children }: Props) {
                         {drawer}
                     </Drawer>
                 </Box>
-                <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                <Box sx={{ flexGrow: 1, p: 3 }}>
                     <Toolbar />
-                    {children}
-                    <Box component="footer" sx={{ mt: 5, textAlign: 'center', width: '100%' }}>
-                        <Typography variant="body2" color="text.secondary">
-                            Copyright © {new Date().getFullYear()} Investify. All rights reserved.
-                        </Typography>
-                        {loading && <LinearProgress color="success" />}
-                    </Box>
+                    <Content>
+                        {children}
+                    </Content>
+                    <Footer/>
+                    {/*<Box component="footer" sx={{ mt: 5, textAlign: 'center', width: '100%' }}>*/}
+                    {/*    <Typography variant="body2" color="text.secondary">*/}
+                    {/*        Copyright © {new Date().getFullYear()} Investify. All rights reserved.*/}
+                    {/*    </Typography>*/}
+                    {/*</Box>*/}
                 </Box>
             </Box>
         </ThemeProvider>
