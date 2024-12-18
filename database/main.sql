@@ -36,7 +36,7 @@ END TRANSACTION ;
 -- Create the user_roles table
 CREATE TABLE user_roles (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- Assuming Supabase default auth schema
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- using Supabase default auth schema
     role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE NOT NULL,
     UNIQUE(user_id, role_id)
 );
@@ -71,13 +71,11 @@ $$ LANGUAGE plpgsql;
 INSERT INTO user_roles (user_id, role_id) VALUES
     ((SELECT id FROM auth.users WHERE email = 'Leone@gmail.com'), (SELECT id FROM roles WHERE name = 'admin')),
     ((SELECT id FROM auth.users WHERE email = 'Nick@gmail.com'), (SELECT id FROM roles WHERE name = 'admin'));
-```
 
-**3. Account Types Table**
+-- **3. Account Types Table**
 
-This table defines the different types of user accounts (Individual, Group).
+-- This table defines the different types of user accounts (Individual, Group).
 
-```sql
 -- Create the account_types table
 CREATE TABLE account_types (
     id SERIAL PRIMARY KEY,
@@ -88,13 +86,11 @@ CREATE TABLE account_types (
 INSERT INTO account_types (name) VALUES
     ('Individual'),
     ('Group');
-```
 
-**4. Individual Account Subtypes Table**
+-- **4. Individual Account Subtypes Table**
 
-This table further categorizes Individual accounts (Normal, Locked).
+-- This table further categorizes Individual accounts (Normal, Locked).
 
-```sql
 -- Create the individual_account_subtypes table
 CREATE TABLE individual_account_subtypes (
     id SERIAL PRIMARY KEY,
@@ -105,13 +101,11 @@ CREATE TABLE individual_account_subtypes (
 INSERT INTO individual_account_subtypes (name) VALUES
     ('Normal'),
     ('Locked');
-```
 
-**5. User Profiles Table**
+-- **5. User Profiles Table**
 
-This table will store additional user information, and link to their account type.
+-- This table will store additional user information, and link to their account type.
 
-```sql
 -- Create the user_profiles table
 CREATE TABLE user_profiles (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -174,13 +168,11 @@ CREATE POLICY user_view_own_profile ON user_profiles
     FOR SELECT
     TO authenticated
     USING (auth.uid() = user_id);
-```
 
-**6. Group Accounts Table**
+-- **6. Group Accounts Table**
 
-This table is for managing group accounts.
+-- This table is for managing group accounts.
 
-```sql
 -- Create the group_accounts table
 CREATE TABLE group_accounts (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -237,13 +229,11 @@ CREATE POLICY owner_view_own_group_account ON group_accounts
     FOR SELECT
     TO authenticated
     USING (auth.uid() = owner_id);
-```
 
-**7. Group Members Table**
+-- **7. Group Members Table**
 
-This table stores information about members of a group.
+-- This table stores information about members of a group.
 
-```sql
 -- Create the group_members table
 CREATE TABLE group_members (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -297,13 +287,11 @@ CREATE POLICY group_members_view_each_other ON group_members
             WHERE gm.group_id = group_id AND gm.user_id = auth.uid()
         )
     );
-```
 
-**8. Group Roles Table**
+-- **8. Group Roles Table**
 
-This table defines the roles within a group.
+-- This table defines the roles within a group.
 
-```sql
 -- Create the group_roles table
 CREATE TABLE group_roles (
     id SERIAL PRIMARY KEY,
@@ -366,8 +354,3 @@ BEGIN
     RETURN role_exists;
 END;
 $$ LANGUAGE plpgsql;
-```
-
-Next, we'll create tables for managing deposits, interest calculations, withdrawals, and notifications.
-
-Use the syntax `Next <task>` to indicate you want to proceed.
