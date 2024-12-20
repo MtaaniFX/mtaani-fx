@@ -204,16 +204,18 @@ List all groups of type "group", where a given user is a member, with pagination
 A user to create a group of type "individual".
 A user to create a group of type "group".
 
-A user to add a given user to a given group they own by the group id.
-A user to remove a given user from a given group they own by the group id.
+A group owner to add a given user to a given group they own by the group id.
+A group owner to remove a given user from a given group they own by the group id.
+
+Check whether a given user is the owner of a given group
 
 Read all details of a given group.
-Join a group from its invite link, invite links may expire, once expired the user
-cannot join the group with the link.
+Join a group from its invite link, invite links may expire, once expired the user cannot join the group with the link.
 Leave a group at will.
 
-
-
-
-
 Given a group id, check if a given user is a member of the group.
+
+
+
+
+
