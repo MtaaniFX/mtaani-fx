@@ -165,8 +165,8 @@ const InvestmentPlans: React.FC<InvestmentPlansProps> = ({
         { field: 'interestRate', headerName: 'Interest Rate', type: 'number', width: 120 },
         { field: 'earnings', headerName: 'Earnings', type: 'number', width: 120 },
         { field: 'status', headerName: 'Status', width: 100 },
-        { field: 'startDate', headerName: 'Start Date', type: 'date', width: 150, valueFormatter: (params) => params.value.toLocaleDateString() },
-        { field: 'endDate', headerName: 'End Date', type: 'date', width: 150, valueFormatter: (params) => params.value.toLocaleDateString() },
+        { field: 'startDate', headerName: 'Start Date', type: 'date', width: 150},
+        { field: 'endDate', headerName: 'End Date', type: 'date', width: 150 },
     ];
 
     return (
