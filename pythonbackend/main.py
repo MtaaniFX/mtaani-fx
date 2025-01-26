@@ -6,6 +6,7 @@ from models import UserSignup, UserLogin
 from supabase_client import *
 import bcrypt
 from admin import router as admin_router
+from c2b_test import router as c2b_router
 
 app = FastAPI()
 
@@ -14,6 +15,9 @@ app.include_router(b2c_router)
 
 # Include the admin router
 app.include_router(admin_router)
+
+# Include C2B routes
+app.include_router(c2b_router)
 
 @app.post("/signup/")
 async def signup(user: UserSignup):
