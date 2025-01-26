@@ -7,18 +7,22 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
+
 load_dotenv()
+
 SMS_URL = os.getenv("DARAJA_SMS")
 TOKEN_URL = os.getenv("DARAJA_ACCESS_TOKEN")
 SHORT_CODE = os.getenv("SHORT_CODE")
-ANOTHER=os.getenv("ANOTHER")
+STK_PUSH_URL=os.getenv("STK_PUSH_URL")
 CALLBACK_URL = os.getenv("CALLBACK_URL")
 B2C_RESULT_CALLBACK = os.getenv("B2C_RESULT_CALLBACK")
 STK_RESULT_CALLBACK = os.getenv("STK_RESULT_CALLBACK")
-
-# my keys
+PASSKEY = os.getenv("PASSKEY")
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
+OAUTH_URL=os.getenv("OAUTH_URL")
+SHORTCODE = os.getenv("SHORT_CODE")  # Till or Paybill number
+
 
 
 # retrieves an OAuth token from Safaricom's Sandbox API
@@ -29,7 +33,7 @@ async def get_bearer_token() -> str:
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-            "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+            OAUTH_URL,
             headers={"Authorization": f"Basic {encoded_auth}"}
         )
         resp.raise_for_status()
@@ -67,19 +71,17 @@ async def stk(amount: Decimal, phone_number: str):
             headers=headers,
             json=payload
         )
-        response.raise_for_status()
+        # response.raise_for_status()
         print("json response>>>",response.json())
         return response.json()
 
 
 # generate stk password
 def stk_password():
-    shortcode = os.getenv("SHORT_CODE")
-    passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"  # Your Daraja passkey
-    timestamp = get_timestamp()
-    password = f"{shortcode}{passkey}{timestamp}"
-    print("function=stk_password()",password)
-    return b64encode(password.encode()).decode()
+    """Generate encrypted password using shortcode and passkey"""
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    data = f"{SHORTCODE}{PASSKEY}{timestamp}"
+    return base64.b64encode(data.encode()).decode(), timestamp
 
 def get_timestamp():
     return datetime.now().strftime("%Y%m%d%H%M%S")
