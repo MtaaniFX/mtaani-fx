@@ -43,7 +43,7 @@ async def get_bearer_token() -> str:
 # initiate a stk push
 async def stk(amount: Decimal, phone_number: str):
     token = await get_bearer_token()
-    call_back = STK_RESULT_CALLBACK
+    call_back = "https://4ebd-41-90-69-81.ngrok-free.app/stk/callback"
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -89,7 +89,8 @@ def get_timestamp():
 
 
 async def main():
-    await stk(Decimal("1"),"254715576479")
+    # await notify_user("25471556479", Decimal("1000.00"),Decimal("5000.000"))
+    await stk(Decimal("1"),"254715576479",4)
 
 if __name__ == "__main__":
     asyncio.run(main())
