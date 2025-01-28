@@ -1,22 +1,18 @@
 import httpx
 import base64
 from base64 import b64encode
-import asyncio
-from decimal import Decimal
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from fastapi import APIRouter, Request
 
+router = APIRouter()
 
 load_dotenv()
 
-SMS_URL = os.getenv("DARAJA_SMS")
-TOKEN_URL = os.getenv("DARAJA_ACCESS_TOKEN")
-SHORT_CODE = os.getenv("SHORT_CODE")
-STK_PUSH_URL=os.getenv("STK_PUSH_URL")
-CALLBACK_URL = os.getenv("CALLBACK_URL")
-B2C_RESULT_CALLBACK = os.getenv("B2C_RESULT_CALLBACK")
-STK_RESULT_CALLBACK = os.getenv("STK_RESULT_CALLBACK")
+
+
+# SMS_URL = os.getenv("DARAJA_SMS")
 PASSKEY = os.getenv("PASSKEY")
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
@@ -24,6 +20,13 @@ OAUTH_URL=os.getenv("OAUTH_URL")
 SHORTCODE = os.getenv("SHORT_CODE")  # Till or Paybill number
 
 
+# once payment is done, you will get a json object here with the values
+@router.post("/stk/callback")
+def handle_stk_callback(request: Request):
+    data =  request.json()
+
+    # this data needs to be stored to database
+    print("hers is stk/callback data\n\n\n\n\n\n", data)
 
 # retrieves an OAuth token from Safaricom's Sandbox API
 # it encodes the CONSUMER_KEY and CONSUMER_SECRET in base64 to authenticate the API request
@@ -33,7 +36,7 @@ async def get_bearer_token() -> str:
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-            OAUTH_URL,
+            'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
             headers={"Authorization": f"Basic {encoded_auth}"}
         )
         resp.raise_for_status()
@@ -41,28 +44,39 @@ async def get_bearer_token() -> str:
 
 
 # initiate a stk push
-async def stk(amount: Decimal, phone_number: str):
+@router.post("/stk/payment")
+async def stk(request: Request):
+
+    print("request",request)
+
+    data = await request.json()
+
+    # this data comes from frontend, enter user and amount
+    amount = data.get("amount")
+    phone_number = data.get("phone_number")
     token = await get_bearer_token()
-    call_back = "https://4ebd-41-90-69-81.ngrok-free.app/stk/callback"
 
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    print("\n\n\n\n",call_back,token)
+
+    STK_RESULT_CALLBACK = os.getenv("STK_RESULT_CALLBACK")
+    print("\n\n\n\n",STK_RESULT_CALLBACK,token)
+    SHORT_CODE = os.getenv("SHORT_CODE")
 
     payload = {
-        "BusinessShortCode": os.getenv("SHORT_CODE"),
+        "BusinessShortCode": SHORT_CODE,
         "Password": stk_password(),
         "Timestamp": get_timestamp(),
         "TransactionType": "CustomerPayBillOnline",
         "Amount": str(amount),
         "PartyA": phone_number,  # Sender's phone number
-        "PartyB": os.getenv("SHORT_CODE"),  # Business shortcode
+        "PartyB": SHORT_CODE,  # Business shortcode
         "PhoneNumber": phone_number,
-        "CallBackURL": call_back,  # Ensure this is active to receive responses from the API
-        "AccountReference": "mtaanifx.com",
-        "TransactionDesc": "Deposit"
+        "CallBackURL": STK_RESULT_CALLBACK,  # Ensure this is active to receive responses from the API
+        "AccountReference": "test",
+        "TransactionDesc": "test"
     }
 
     async with httpx.AsyncClient() as client:
@@ -81,16 +95,16 @@ def stk_password():
     """Generate encrypted password using shortcode and passkey"""
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     data = f"{SHORTCODE}{PASSKEY}{timestamp}"
-    return base64.b64encode(data.encode()).decode(), timestamp
+    return base64.b64encode(data.encode()).decode()
 
 def get_timestamp():
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
 
-async def main():
-    # await notify_user("25471556479", Decimal("1000.00"),Decimal("5000.000"))
-    await stk(Decimal("1"),"254715576479",4)
+# async def main():
+#     # await notify_user("25471556479", Decimal("1000.00"),Decimal("5000.000"))
+#     await stk(Decimal("1"),"254715576479")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())
