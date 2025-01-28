@@ -40,8 +40,6 @@ async def initiate_b2c_payment(request: Request):
 
     amount = payload.get("amount")
     phone = payload.get("phone_number")
-    remarks = payload.get("remarks")
-    occasion = payload.get("occasion")
 
     access_token = await get_access_token()
 
@@ -49,6 +47,8 @@ async def initiate_b2c_payment(request: Request):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}",
     }
+
+    print("><><><",TIMEOUT_URL,B2C_RESULT_CALLBACK)
 
     b2c_payload = {
         "OriginatorConversationID": generate_originator_id(),
@@ -58,10 +58,10 @@ async def initiate_b2c_payment(request: Request):
         "Amount": amount,
         "PartyA": 600998,
         "PartyB": phone,
-        "Remarks": remarks,
+        "Remarks": "mtaani fx",
         "QueueTimeOutURL": TIMEOUT_URL,
         "ResultURL": B2C_RESULT_CALLBACK,
-        "Occasion": occasion,
+        "Occasion": "mtaani salary",
     }
 
     # Make the B2C request
