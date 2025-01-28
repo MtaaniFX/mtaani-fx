@@ -3,6 +3,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
+from decimal import Decimal
 
 load_dotenv()
 
@@ -14,6 +15,10 @@ C2B_CONFIRMATION = os.getenv("C2B_CONFIRMATION")
 # this is where saf will send validation data before completing request
 C2B_VALIDATION = os.getenv("C2B_VALIDATION")
 C2B_REGISTER_URL = os.getenv("C2B_REGISTER_URL")
+DOMAIN_NAME = os.getenv("DOMAIN_NAME")
+MAX_AMOUNT = os.getenv("MAX_AMOUNT")
+MIN_AMOUNT = os.getenv("MIN_AMOUNt")
+
 
 router = APIRouter()
 
@@ -24,32 +29,36 @@ router = APIRouter()
 def register_url():
     access_token = get_access_token()
     shortcode=SHORT_CODE
-    validation_endpoint = C2B_VALIDATION
+    validation_endpoint =  DOMAIN_NAME+C2B_VALIDATION
 
-    confirmation_endpoint = C2B_CONFIRMATION
+    confirmation_endpoint = DOMAIN_NAME+C2B_CONFIRMATION
 
     response_json = register_c2b_urls(access_token,shortcode,validation_endpoint,confirmation_endpoint)
-    
 
     print("\n\nresponsejson\n\n", response_json)
-    #this is ResponseCode, 0 for success
+
     code = response_json.get("ResponseCode")
 
-    # this is originator id, its unique
-    # originator = response_json.get("OriginatorConversationID")
-
-    # this is the status of request: success or failed
-    # status = response_json.get("ResponseDescription")
-
-    if int(code) == 0:
+    if int(code) == 0 or code == '0' or str(code) == '0':
         print("registration success")
-    return response_json
+        return {"message": "success"}
+
+    # this part will be returned if failure occurs
+    return {"message": "failed"}
 
 @router.post("/c2b/validation")
 async def validation_handler(request: Request):
     data = await request.json()
+
+    # transaction_id = data.get("TransID")
+    amount = data.get("TransAmount")
+
+    # reject the amount
+    if Decimal(amount) > Decimal(MAX_AMOUNT) or Decimal(amount) < Decimal(MIN_AMOUNT):
+        return {"ResultCode" :"C2B000111", "ResultDesc":"Rejected"}
+    
     print("validation done",data)
-    # validate the transaction here
+    
     return {"ResultCode": 0, "ResultDesc": "Accepted"}
 
 
