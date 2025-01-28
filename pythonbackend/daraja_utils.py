@@ -61,20 +61,20 @@ async def stk(request: Request):
         "Content-Type": "application/json"
     }
 
-    STK_RESULT_CALLBACK = os.getenv("STK_RESULT_CALLBACK")
-    print("\n\n\n\n",STK_RESULT_CALLBACK,token)
-    SHORT_CODE = os.getenv("SHORT_CODE")
+    stk_result_callback = os.getenv("STK_RESULT_CALLBACK")
+    print("\n\n\n\n", stk_result_callback,token)
+    short_code = os.getenv("SHORT_CODE")
 
     payload = {
-        "BusinessShortCode": SHORT_CODE,
+        "BusinessShortCode": short_code,
         "Password": stk_password(),
         "Timestamp": get_timestamp(),
         "TransactionType": "CustomerPayBillOnline",
         "Amount": str(amount),
         "PartyA": phone_number,  # Sender's phone number
-        "PartyB": SHORT_CODE,  # Business shortcode
+        "PartyB": short_code,  # Business shortcode
         "PhoneNumber": phone_number,
-        "CallBackURL": STK_RESULT_CALLBACK,  # Ensure this is active to receive responses from the API
+        "CallBackURL": stk_result_callback,  # Ensure this is active to receive responses from the API
         "AccountReference": "test",
         "TransactionDesc": "test"
     }
