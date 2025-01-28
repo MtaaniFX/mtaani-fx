@@ -1,70 +1,25 @@
-from fastapi import APIRouter, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-
-router = APIRouter()
-
-# allow requests from frontend
-router.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-from fastapi import APIRouter, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-import bcrypt
-# from decimal import Decimal
-from supabase_client import *
-# from daraja_utils import stk
-# from requests import Request
+from fastapi import FastAPI
+from starlette import status
+import requests
+from b2c import router as b2c_router
 from models import UserSignup, UserLogin
+from supabase_client import *
+import bcrypt
+from admin import router as admin_router
+from c2b import router as c2b_router
+from daraja_utils import router as stk_router
 
-router = APIRouter()
+app = FastAPI()
 
-@router.post("/signup/")
-async def signup(user: UserSignup):
-    if get_user_by_email(user.email):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="email already exists")
-    
+# Include the B2C routes
+app.include_router(b2c_router)
 
-    user.first_name = user.first_name.strip()
-    user.last_name = user.last_name.strip()
-    user.id_number = user.id_number.strip()
+# Include the admin router
+app.include_router(admin_router)
 
-    # hash the password before saving
-    hashed_password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt()).decode()
+# Include C2B routes
+app.include_router(c2b_router)
 
-    response = save_user(user.email, hashed_password,
-                         user.first_name,
-                         user.last_name,
-                         user.phone_number,
-                         user.id_number,
-                         True )
-        
-    print("signup response>>",response)
 
-    if not response:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="error check your credentials and try again")
-
-    return {"message", "User registration success"}
-
-@router.post("/login/")
-async def login(user: UserLogin):
-
-    # when user signs up, get his email
-    valid_user = get_user_by_email(user.email)
-
-    # check if user is in the database
-    if not valid_user:
-        # use the same error message for email and password for security purposes
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password")
-
-    # check password
-    if not bcrypt.checkpw(user.password.encode(), valid_user['password'].encode()):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password")
-
-    return {"message": "Login successful", "user":valid_user['first_name']}
-
+# Include stk routes
+app.include_router(stk_router)
