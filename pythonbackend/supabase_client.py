@@ -66,7 +66,7 @@ def get_user_by_id(user_id: int):
     """Fetch users from mtaani_users table by user_id."""
     response = supabase.table("mtaani_users").select("*").eq("id", user_id).single().execute()
     
-    print("***********************",response)
+    print("**********get user by id*************",response)
 
     if response.data is None:
         raise HTTPException(status_code=500, detail="Error fetching user")
@@ -79,15 +79,9 @@ def get_user_by_id(user_id: int):
 async def update_user_balance(user_id: int, new_balance: Decimal):
     """update the user's balance"""
     response = supabase.table("mtaani_users").update({"balance": str(new_balance)}).eq("id",user_id).execute()
-    print(response)
+    print("******** update user balance *****",response)
     if not response:
         raise HTTPException(status_code=500, detail="Failed to update user balance")
-
-# validate phone number
-def validate_phone_number(number:str):
-    valid = r"^(?:\+254|254|0)?7\d{8}$"
-    return bool(re.match(valid, number))
-
 
 async def log_transaction(user_id: int, amount: Decimal, transaction_type: str ,status: str = "Pending"):
     """Log the deposit as a new transaction"""
