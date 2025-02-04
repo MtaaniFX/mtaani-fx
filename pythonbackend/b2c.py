@@ -24,6 +24,9 @@ BASE_URL = os.getenv("BASE_URL")
 # Base URL for Safaricom API
 BASE_URL_SAF = "https://sandbox.safaricom.co.ke"
 B2C_URL = "https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest"
+
+
+
 # Function to get access token
 async def get_access_token():
     url = f"{BASE_URL_SAF}/oauth/v1/generate?grant_type=client_credentials"
@@ -33,14 +36,8 @@ async def get_access_token():
 
 
 
-# B2C payment endpoint
-@router.post("/b2c/payment")
-async def initiate_b2c_payment(request: Request):
-    payload = await request.json()
-
-    amount = payload.get("amount")
-    phone = payload.get("phone_number")
-
+# deposit() function will handle the endpoint and then send the details here
+async def initiate_b2c_payment(amount,phone):
     access_token = await get_access_token()
 
     headers = {
@@ -98,8 +95,6 @@ async def initiate_b2c_payment(request: Request):
 
 
 
-
-
 # Callback for result notification
 @router.post("/b2c/result")
 async def handle_result_callback(request: Request):
@@ -123,7 +118,6 @@ async def handle_result_callback(request: Request):
         }).eq("transaction_id", transaction_id).execute()
 
     return {"status": "callback processed"}
-
 
 
 # Callback for timeout notification
