@@ -20,13 +20,13 @@ SECURITY_CREDENTIAL = os.getenv("SECURITY_CREDENTIAL")
 B2C_RESULT_CALLBACK = os.getenv("B2C_RESULT_CALLBACK")
 CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
-
+BASE_URL = os.getenv("BASE_URL")
 # Base URL for Safaricom API
-BASE_URL = "https://sandbox.safaricom.co.ke"
+BASE_URL_SAF = "https://sandbox.safaricom.co.ke"
 B2C_URL = "https://sandbox.safaricom.co.ke/mpesa/b2c/v3/paymentrequest"
 # Function to get access token
 async def get_access_token():
-    url = f"{BASE_URL}/oauth/v1/generate?grant_type=client_credentials"
+    url = f"{BASE_URL_SAF}/oauth/v1/generate?grant_type=client_credentials"
     response = requests.get(url, auth=(CONSUMER_KEY, CONSUMER_SECRET))
     response.raise_for_status()
     return response.json()["access_token"]
@@ -59,8 +59,8 @@ async def initiate_b2c_payment(request: Request):
         "PartyA": 600998,
         "PartyB": phone,
         "Remarks": "mtaani fx",
-        "QueueTimeOutURL": TIMEOUT_URL,
-        "ResultURL": B2C_RESULT_CALLBACK,
+        "QueueTimeOutURL": BASE_URL+TIMEOUT_URL,
+        "ResultURL": BASE_URL+B2C_RESULT_CALLBACK,
         "Occasion": "mtaani salary",
     }
 

@@ -14,19 +14,20 @@ C2B_CONFIRMATION = os.getenv("C2B_CONFIRMATION")
 # this is where saf will send validation data before completing request
 C2B_VALIDATION = os.getenv("C2B_VALIDATION")
 C2B_REGISTER_URL = os.getenv("C2B_REGISTER_URL")
-
+BASE_URL = os.getenv("BASE_URL")
 router = APIRouter()
 
 # this is a one time request to register the urls
-# once its registered dont call this function again, if in production
-# if its a sandbox you can play with it
+# once it's registered don't call this function again, if in production
+# if it's a sandbox you can play with it
 @router.get('/c2b/register')
 def register_url():
     access_token = get_access_token()
     shortcode=SHORT_CODE
-    validation_endpoint = C2B_VALIDATION
+    print("THIS IS THE BASE URL",BASE_URL)
+    validation_endpoint = BASE_URL+C2B_VALIDATION
 
-    confirmation_endpoint = C2B_CONFIRMATION
+    confirmation_endpoint = BASE_URL+C2B_CONFIRMATION
 
     response_json = register_c2b_urls(access_token,shortcode,validation_endpoint,confirmation_endpoint)
     
