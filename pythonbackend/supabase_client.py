@@ -101,7 +101,7 @@ async def get_user_by_phone(phone_number: str):
     # a dictionary will be returned containing details of user
     try:
         response = supabase.table('clients').select("*").eq("phone_number",phone_number).single().execute()
-        print(type(response.data))
+        print(response.data)
         if phone_number == response.data.get('phone_number'):
             print("numbers match")
             return True
@@ -128,6 +128,9 @@ async def get_current_balance(phone_number: str):
 
 async def update_user_balance(phone_number, amount: Decimal):
     try:
+        if amount < 0:
+            print("cannot compute that")
+            return
         current_balance = await get_current_balance(phone_number)
         new_balance = Decimal(amount)+Decimal(current_balance)
         response = supabase.table("clients").update({"current_balance": str(new_balance)}).eq("phone_number",phone_number).execute()
@@ -165,10 +168,10 @@ async def log_transaction(user_id: int, amount: Decimal, transaction_type: str ,
 async def main():
     await get_user_by_phone('254715576479')
     print("****************\n\n")
-    await update_user_balance('254715576479',Decimal(10))
+    await update_user_balance('254715576479',Decimal(-10000))
     # print(">>>>>>>")
     # await get_current_balance('254715576479')
-    await get_user_by_email('rayjaymuiruri@gmail.com')
+    # await get_user_by_email('rayjaymuiruri@gmail.com')
 
 if __name__ == "__main__":
     asyncio.run(main())
