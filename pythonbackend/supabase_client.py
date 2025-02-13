@@ -1,45 +1,79 @@
-from datetime import timedelta
-
+import asyncio
 import os
 from dotenv import load_dotenv
+from fastapi import APIRouter,status,HTTPException
+from postgrest import APIError
+from pydantic import BaseModel
 from supabase import create_client, Client
 from decimal import Decimal
-from fastapi.exceptions import HTTPException
 import re
 
-
-
-# this function loads environment variables from a .env file into your environment
-# making them accessible via os.getenv
 load_dotenv()
+router = APIRouter()
 
 SUPABASE_URL = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 ACCESS_TOKEN = os.getenv("DARAJA_TOKEN")
-
-
-
-# create a client instance, this will be used to interact with database
 supabase: Client = create_client(SUPABASE_URL,SUPABASE_KEY)
 
-def save_user(email: str, hashed_password: str, first_name: str, last_name: str,phone_number: str,id_number: str,is_verified: bool):
-    response = supabase.table('mtaani_users').insert({
+class UpdateAccountTypeRequest(BaseModel):
+    user_id: str #uuid of user
+    account_type: str # new account type (normal,locked,group)
+
+# user updates his account here
+@router.post('/update-account-type')
+async def update_account_type(request: UpdateAccountTypeRequest):
+    # validate the account type
+    if request.account_type not in ["normal", "locked", "group"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="invalid account type: allowed (normal,locked,group)"
+        )
+
+    # update account type
+    try:
+        response = supabase.table('clients').update(
+            {"account_type": request.account_type}
+        ).eq("id", request.user_id).excute()
+
+        # check if update was a success
+        if not response.data:
+            raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="user not found"
+            )
+        return {"message":"account type updated successfully", "data":response.data.get("account_type")}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="an error occurred try again later"
+        )
+
+
+def save_user(email: str, hashed_password: str, first_name: str, last_name: str,phone_number: str,id_number: str,):
+    response = supabase.table('clients').insert({
         'email': email,
         'password':hashed_password,
-        'first_name':first_name,
-        'last_name':last_name,
+        'full_name':first_name+last_name,
         'phone_number':phone_number,
         'id_number':id_number,
-        'is_verified':is_verified,
+        'current_balance':Decimal(0),
     }).execute()
     return response
 
 
 # fetch user detail using email
-def get_user_by_email(email: str):
-    resp = supabase.table('mtaani_users').select('*').eq('email',email).execute()
-    print(">>>",resp)
-    return resp.data[0] if resp.data else None
+async def get_user_by_email(email: str):
+    try:
+        response = supabase.table('clients').select('*').eq('email',email).single().execute()
+        print(response)
+        if response.data.get('email') == email:
+            print("emails match")
+        else:
+            print("something happened")
+    except APIError as e:
+        print(e.message)
 
 
 # two types of transaction status: completed and pending
@@ -60,31 +94,52 @@ def update_transaction(phone_number: str, receipt_number: str):
 
     except Exception as e:
         print(f"an error occurred: {e}")
-    
-
-def get_user_by_id(user_id: int):
-    """Fetch users from mtaani_users table by user_id."""
-    response = supabase.table("mtaani_users").select("*").eq("id", user_id).single().execute()
-    
-    print("***********************",response)
-
-    if response.data is None:
-        raise HTTPException(status_code=500, detail="Error fetching user")
-
-    return response.data
 
 
+# check if user with that phone number exists
+async def get_user_by_phone(phone_number: str):
+    # a dictionary will be returned containing details of user
+    try:
+        response = supabase.table('clients').select("*").eq("phone_number",phone_number).single().execute()
+        print(response.data)
+        if phone_number == response.data.get('phone_number'):
+            print("numbers match")
+            return True
+    except APIError as e:
+        if e.details.__contains__('The result contains 0 rows'):
+            print("no such user")
+            print(e)
+            return False
+        else:
+            print("the user with that number does not exist")
+            return False
 
 
-async def update_user_balance(user_id: int, new_balance: Decimal):
-    """update the user's balance"""
-    response = supabase.table("mtaani_users").update({"balance": str(new_balance)}).eq("id",user_id).execute()
-    print(response)
-    if not response:
-        raise HTTPException(status_code=500, detail="Failed to update user balance")
+async def get_current_balance(phone_number: str):
+    try:
+        response = supabase.table('clients').select('current_balance').eq("phone_number",phone_number).single().execute()
+        print(response.data)
+        current_balance = response.data.get("current_balance")
+        print(current_balance)
+        return str(current_balance)
+    except APIError as e:
+        print(e.message)
+
+
+async def update_user_balance(phone_number, amount: Decimal):
+    try:
+        if amount < 0:
+            print("cannot compute that")
+            return
+        current_balance = await get_current_balance(phone_number)
+        new_balance = Decimal(amount)+Decimal(current_balance)
+        response = supabase.table("clients").update({"current_balance": str(new_balance)}).eq("phone_number",phone_number).execute()
+        print(response)
+    except APIError as e:
+        print("failed to update balance")
 
 # validate phone number
-def validate_phone_number(number:str):
+async def validate_phone_number(number:str):
     valid = r"^(?:\+254|254|0)?7\d{8}$"
     return bool(re.match(valid, number))
 
@@ -99,7 +154,24 @@ async def log_transaction(user_id: int, amount: Decimal, transaction_type: str ,
     }
 
     response = supabase.table("transactions_mtaani").insert(transaction_data).execute()
-    print("*******************>>>",response)
+    print("**************",response)
     if not response:
         raise HTTPException(status_code=500, detail="Failed to log transaction")
-    
+
+
+
+# # deduct user amount associated with a certain phone number
+# async def deduct_amount()
+
+
+
+async def main():
+    await get_user_by_phone('254715576479')
+    print("****************\n\n")
+    await update_user_balance('254715576479',Decimal(-10000))
+    # print(">>>>>>>")
+    # await get_current_balance('254715576479')
+    # await get_user_by_email('rayjaymuiruri@gmail.com')
+
+if __name__ == "__main__":
+    asyncio.run(main())

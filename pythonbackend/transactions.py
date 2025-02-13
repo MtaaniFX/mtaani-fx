@@ -9,7 +9,9 @@ router = APIRouter()
 async def deposit(deposit_request: DepositRequest):
 
     amount = deposit_request.amount
-    
+    if amount <= 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Deposit amount must be between 10,000 to 100,000")
+
     user_id = deposit_request.user_id
 
     # check if amount is in range
