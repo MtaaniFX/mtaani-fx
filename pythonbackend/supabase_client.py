@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from supabase import create_client, Client
 from decimal import Decimal
 import re
-
 load_dotenv()
 router = APIRouter()
 
@@ -104,15 +103,15 @@ async def get_user_by_phone(phone_number: str):
         print(response.data)
         if phone_number == response.data.get('phone_number'):
             print("numbers match")
-            return True
+            return response.data,True
     except APIError as e:
         if e.details.__contains__('The result contains 0 rows'):
             print("no such user")
             print(e)
-            return False
+            return None,False
         else:
             print("the user with that number does not exist")
-            return False
+            return None,False
 
 
 async def get_current_balance(phone_number: str):
@@ -168,7 +167,7 @@ async def log_transaction(user_id: int, amount: Decimal, transaction_type: str ,
 async def main():
     await get_user_by_phone('254715576479')
     print("****************\n\n")
-    await update_user_balance('254715576479',Decimal(-10000))
+    # await update_user_balance('254715576479',Decimal(-10000))
     # print(">>>>>>>")
     # await get_current_balance('254715576479')
     # await get_user_by_email('rayjaymuiruri@gmail.com')

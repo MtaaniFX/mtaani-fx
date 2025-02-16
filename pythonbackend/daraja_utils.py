@@ -17,7 +17,7 @@ PASSKEY = os.getenv("PASSKEY")
 CONSUMER_KEY = os.getenv("CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
 OAUTH_URL=os.getenv("OAUTH_URL")
-SHORTCODE = os.getenv("SHORT_CODE")  # Till or Paybill number
+SHORTCODE = os.getenv("SHORT_CODE")  # Till or Pay bill number
 
 
 # once payment is done, you will get a json object here with the values
@@ -44,18 +44,8 @@ async def get_bearer_token() -> str:
 
 
 # initiate a stk push
-@router.post("/stk/payment")
-async def stk(request: Request):
-
-    print("request",request)
-
-    data = await request.json()
-
-    # this data comes from frontend, enter user and amount
-    amount = data.get("amount")
-    phone_number = data.get("phone_number")
+async def stk(amount,phone_number):
     token = await get_bearer_token()
-
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"

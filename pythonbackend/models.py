@@ -17,8 +17,8 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
-# Deposit model
-class DepositRequest(BaseModel):
-    user_id: int
-    amount: Decimal
-    phone_number: str
+# # Deposit model
+# class DepositRequest(BaseModel):
+#     user_id: str
+#     amount: Decimal
+#     phone_number: str

@@ -1,12 +1,20 @@
 from fastapi import APIRouter, HTTPException, Request,status
-from models import DepositRequest
+from pydantic import BaseModel
 from decimal import Decimal
 from daraja_utils import stk
-from supabase_client import get_user_by_id, log_transaction, update_user_balance, supabase
+from pythonbackend.supabase_client import get_user_by_phone
+from supabase_client import log_transaction, update_user_balance, supabase
 router = APIRouter()
 
-@router.post("/deposit/")
+
+class DepositRequest(BaseModel):
+    user_id: str
+    amount: Decimal
+    phone_number: str
+
+@router.post("/deposit")
 async def deposit(deposit_request: DepositRequest):
+    print("hit")
 
     amount = deposit_request.amount
     if amount <= 0:
@@ -14,24 +22,21 @@ async def deposit(deposit_request: DepositRequest):
 
     user_id = deposit_request.user_id
 
-    # check if amount is in range
     if amount < Decimal('10000') or amount > Decimal('100000'):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Deposit amount must be between 10,000 to 100,000")
 
+    user_data = get_user_by_phone(deposit_request.phone_number)
 
-    # check if user exists
-    user = get_user_by_id(user_id)
-    print("DEPOSIT>>>>",user)
-    if not user:
+    if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    resp = await stk(amount,user["phone_number"])
+    resp = await stk(amount,user_data["phone_number"])
 
-    new_balance = Decimal(user["balance"]) + amount
+    print("resp from stk",resp)
+    new_balance = Decimal(user_data["balance"]) + amount
 
     # log the transaction as deposit
     await log_transaction(user_id, amount,transaction_type="Deposit")
-
 
     # update user balance from the database
     await update_user_balance(user_id, new_balance)
