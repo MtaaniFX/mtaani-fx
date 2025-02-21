@@ -24,13 +24,13 @@ SAFARICOM_IP_ADDRESSES = {
     "196.201.212.136",
     "196.201.212.74",
     "196.201.212.69",
-    # this is the ip of my machine, am supposed to remove it
+    # put the ip of your machine here, since the middleware will reject it if its not in this set, for testing purposes
 }
 
 
 async def check_ip_middleware(request: Request, next_handler):
     client_ip = request.client.host
-    print(client_ip)#function to log this ip addresses
+    print(client_ip)#function to log this ip addresses to a file (but this feature is useless since we already know the ips to filter)
 
     if request.url.path == "/c2b/register":
         response = await next_handler(request)
